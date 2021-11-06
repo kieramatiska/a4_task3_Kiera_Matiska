@@ -2,29 +2,63 @@
 title: "Bonanza Snowshoe Hares"
 author: "Kiera Matiska"
 date: "11/5/2021"
-output: html_document
+output: 
+  html_document: 
+    toc: yes
+    theme: cerulean
+    number_sections: yes
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+# Attach Packages
+library(tidyverse)
+library(here)
+library(lubridate)
+library(kableExtra)
 ```
 
-## R Markdown
+# Juvinite Hare Initial Investigation
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+### Read in data
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+- Use `read_csv()` and the here package to read in bonanza_hares.csv
 
-```{r cars}
-summary(cars)
+```{r}
+hares <- read_csv(here("data", "bonanza_hares.csv"))
 ```
 
-## Including Plots
+## Annual Juvinile Hare Trap Counts
 
-You can also embed plots, for example:
+### Data Wrangling
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+- Create a new column, year, using the `year()` function in lubridate
+- Create a new data frame using the `summarize()` function that has two columns, year and number of hare traps
+- Use `kable_styling()` to finalize the table
+
+```{r}
+hares_year <- hares %>% 
+  mutate(date = mdy(date)) %>% 
+  mutate(year = year(date))
+
+hares_traps <- hares_year %>% 
+  group_by(year) %>% 
+  summarize(number = n())
+
+hares_traps %>% 
+  kbl() %>% 
+  kable_styling()
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### Visualize Data
+
+Create a column graph using `ggplot()`
+
+```{r}
+ggplot(data = hares_traps, 
+       aes(x = year, y = number)) +
+  geom_col()
+```
+
