@@ -9,6 +9,11 @@ output:
     number_sections: yes
     code_folding: hide
 ---
+# Introduction
+
+# Data and Analyses
+
+## Citations
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -59,6 +64,18 @@ Create a column graph using `ggplot()`
 ```{r}
 ggplot(data = hares_traps, 
        aes(x = year, y = number)) +
-  geom_col()
+  geom_col(color = "gray", fill = "darkblue") +
+  theme_gray() +
+  labs(title = "Juvenile Hare Trap Counts per Year",
+       x = "Year",
+       y = "Number of Traps") +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
+Figure 1: Annual Counts of Juvenile Hare Traps in Bonanza Creek
+
+### Major Takeaways
+
+Throughout the 15 years in which this data was collected, there were some major differences in the amount of trappings over various years. The years 1999, 2009, 2010, and 2011 had the highest number of hare trappings, reaching upwards of 385 traps per year. Besides two other years (2000 and 2008), the rest contained less than 200 trappings, with the lowest containing only 38 in 2002. These change is numbers are potentially problematic. In the future, this population should be monitored to decrease the chances of the species extinction.
+
+#
