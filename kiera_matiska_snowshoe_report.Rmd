@@ -72,8 +72,12 @@ ggplot(data = hares_traps,
   theme_gray() +
   labs(title = "Juvenile Hare Trap Counts Per Year",
        x = "Year",
-       y = "Number of Traps") +
-  theme(plot.title = element_text(hjust = 0.5))
+       y = "Number of Traps",
+       caption = expression(
+         paste(
+           bold("Figure 1."), " Annual Counts of Juvenile Hare Traps in Bonanza Creek"))) +
+  theme(plot.title = element_text(hjust = 0.5), 
+        plot.caption = element_text(hjust = 0))
 ```
 
 Figure 1: Annual Counts of Juvenile Hare Traps in Bonanza Creek
@@ -119,12 +123,48 @@ ggplot(data = hare_weights,
        aes(x = sex, y = weight)) +
   geom_point(size = 0.8, aes(color = sex)) +
   facet_grid(~ grid) +
-  labs(title = "Juvenile Hare Weights by Sex in each Site Zone",
+  labs(title = "Juvenile Hare Weights by Sex in Each Site Zone",
        x = "Sex",
-       y = "Weight (g)") +
-  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+       y = "Weight (g)",
+       caption = expression(
+         paste(
+           bold("Figure 2."), " Juvenile Hare Weights (g) by Sex in Each Bonanza Creek Site Zone"
+         )
+       )) +
+  theme(plot.title = element_text(hjust = 0.5), 
+        legend.position = "none",
+        plot.caption = element_text(hjust = 0))
 ```
 
 ## Major Takeaways
 
-# Juvenile Weight Comparisons
+# Juvenile Weight Comparisons (male and female snowshoe hares)
+
+## Wrangle Data
+
+Create a data subset, `weight_hare` with only the variables sex and weight
+
+```{r}
+weight_hare <- hares_sex %>% 
+  select(sex, weight) %>% 
+  filter(sex %in% c("male", "female"))
+```
+
+## Summarize Data
+
+Create and finalize a summary table that contains the mean, standard deviation, and sample size for male and female juvenile hares
+- Use the `summarize` and `group_by` functions to find weight statistics based on sex
+- Use `kableExtra` to finalize table and add table caption
+
+```{r}
+hare_summary <- weight_hare %>% 
+  group_by(sex) %>% 
+  summarize(mean(weight),
+            sd(weight),
+            sample_size = n())
+
+hare_summary %>% 
+  kbl(caption = "Caption 1: Mean, Standard Deviation, and Sample Sizes of Weights by Sex of Juvenile Hares") %>% 
+  kable_styling()
+```
+
