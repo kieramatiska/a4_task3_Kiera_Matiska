@@ -25,21 +25,20 @@ library(lubridate)
 library(kableExtra)
 ```
 
-# Juvinite Hare Initial Investigation
+# Read in data
 
-### Read in data
-
-- Use `read_csv()` and the here package to read in bonanza_hares.csv
+- Use `read_csv()` and the here package to read in bonanza_hares.csv.
 
 ```{r}
 hares <- read_csv(here("data", "bonanza_hares.csv"))
 ```
 
-## Annual Juvinile Hare Trap Counts
+# Annual Juvinile Hare Trap Counts
 
-### Data Wrangling
+# Data Wrangling
 
 - Create a new column, year, using the `year()` function in lubridate
+- Create a subset that only contains juvenile hare data
 - Create a new data frame using the `summarize()` function that has two columns, year and number of hare traps
 - Use `kable_styling()` to finalize the table
 
@@ -48,7 +47,11 @@ hares_year <- hares %>%
   mutate(date = mdy(date)) %>% 
   mutate(year = year(date))
 
-hares_traps <- hares_year %>% 
+hares_juvenile <- hares_year %>% 
+  filter(age == "j")
+
+hares_traps <- hares_juvenile %>% 
+  select(year, age) %>% 
   group_by(year) %>% 
   summarize(number = n())
 
@@ -57,7 +60,7 @@ hares_traps %>%
   kable_styling()
 ```
 
-### Visualize Data
+## Visualize Data
 
 Create a column graph using `ggplot()`
 
@@ -65,8 +68,9 @@ Create a column graph using `ggplot()`
 ggplot(data = hares_traps, 
        aes(x = year, y = number)) +
   geom_col(color = "gray", fill = "darkblue") +
+  scale_x_continuous(breaks = 1999:2012) +
   theme_gray() +
-  labs(title = "Juvenile Hare Trap Counts per Year",
+  labs(title = "Juvenile Hare Trap Counts Per Year",
        x = "Year",
        y = "Number of Traps") +
   theme(plot.title = element_text(hjust = 0.5))
@@ -74,8 +78,53 @@ ggplot(data = hares_traps,
 
 Figure 1: Annual Counts of Juvenile Hare Traps in Bonanza Creek
 
-### Major Takeaways
+## Major Takeaways
 
-Throughout the 15 years in which this data was collected, there were some major differences in the amount of trappings over various years. The years 1999, 2009, 2010, and 2011 had the highest number of hare trappings, reaching upwards of 385 traps per year. Besides two other years (2000 and 2008), the rest contained less than 200 trappings, with the lowest containing only 38 in 2002. These change is numbers are potentially problematic. In the future, this population should be monitored to decrease the chances of the species extinction.
+# Juvenile Hare Weights
 
-#
+## Data Wrangling
+
+- Using `mutate()`, rename the sex variables so they are spelled out: m = male, f = female, and NA = not applicable
+- Using `mutate()`, reame the grid variables so they are spelled out: bonrip = Bonanza Riparian, bonmat = Bonanza Mature, bonbs = Bonanza Lowland Mature
+- Create new data frame, hare_weights, using the `select()` function so that it contains only hare weights, sex, and grid site.
+
+```{r}
+hares_sex <- hares_juvenile %>% 
+  mutate(sex = case_when(
+    sex == "m" ~ "male",
+    sex == "f" ~ "female",
+    is.na(sex) == TRUE ~ "N/A"
+  ))
+
+hare_grids <- hares_sex %>% 
+  mutate(grid = case_when(
+    grid == "bonrip" ~ "Bonanza Riparian",
+    grid == "bonmat" ~ "Bonanza Mature",
+    grid == "bonbs" ~ "Bonanza Lowland Mature"
+  ))
+
+hare_weights <- hare_grids %>% 
+  select(weight, sex, grid)
+```
+
+## Data Visualization
+
+Create a graph of the hare_weights data:
+- Facet by sex
+- Change label names
+- Add a figure caption
+
+```{r}
+ggplot(data = hare_weights,
+       aes(x = sex, y = weight)) +
+  geom_point(size = 0.8, aes(color = sex)) +
+  facet_grid(~ grid) +
+  labs(title = "Juvenile Hare Weights by Sex in each Site Zone",
+       x = "Sex",
+       y = "Weight (g)") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+```
+
+## Major Takeaways
+
+# Juvenile Weight Comparisons
