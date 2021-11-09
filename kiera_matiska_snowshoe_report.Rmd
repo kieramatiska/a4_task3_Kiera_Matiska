@@ -7,7 +7,6 @@ output:
     toc: yes
     theme: cerulean
     number_sections: yes
-    code_folding: hide
 ---
 # Introduction
 
@@ -16,13 +15,14 @@ output:
 ## Citations
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 
 # Attach Packages
 library(tidyverse)
 library(here)
 library(lubridate)
 library(kableExtra)
+library(effsize)
 ```
 
 # Read in data
@@ -70,8 +70,7 @@ ggplot(data = hares_traps,
   geom_col(color = "gray", fill = "darkblue") +
   scale_x_continuous(breaks = 1999:2012) +
   theme_gray() +
-  labs(title = "Juvenile Hare Trap Counts Per Year",
-       x = "Year",
+  labs(x = "Year",
        y = "Number of Traps",
        caption = expression(
          paste(
@@ -123,8 +122,7 @@ ggplot(data = hare_weights,
        aes(x = sex, y = weight)) +
   geom_point(size = 0.8, aes(color = sex)) +
   facet_grid(~ grid) +
-  labs(title = "Juvenile Hare Weights by Sex in Each Site Zone",
-       x = "Sex",
+  labs(x = "Sex",
        y = "Weight (g)",
        caption = expression(
          paste(
@@ -159,8 +157,8 @@ Create and finalize a summary table that contains the mean, standard deviation, 
 ```{r}
 hare_summary <- weight_hare %>% 
   group_by(sex) %>% 
-  summarize(mean(weight),
-            sd(weight),
+  summarize(mean(weight, na.rm = TRUE),
+            sd(weight, na.rm = TRUE),
             sample_size = n())
 
 hare_summary %>% 
@@ -168,3 +166,79 @@ hare_summary %>%
   kable_styling()
 ```
 
+```{r, include = FALSE}
+# Create vectors of hare weights 
+weight_males <- hares_sex %>% # This vector is for male hares
+  filter(sex == "male") %>% 
+  drop_na(weight) %>% # Dropping weights with NA stored
+  pull(weight)
+
+weight_females <- hares_sex %>% # This vector is for female hares
+  filter(sex == "female") %>% 
+  drop_na(weight) %>% # Dropping weights with NA stored
+  pull(weight)
+```
+
+```{r, include = FALSE}
+hist(weight_males)
+
+hist(weight_females)
+
+qqplot(weight_males, weight_females)
+```
+
+## Perform a t-test on the data
+
+Use `t.test()` to run the test and find significance of the data.
+
+```{r}
+weight_ttest <- t.test(weight_males, weight_females)
+
+weight_cohen <- cohen.d(weight_males, weight_females)
+```
+
+## Key Takeaways
+
+# Relationship Between Juvenile Weight and Hind Foot Length
+
+## Data Wrangling
+
+Create a new subset that consists of only juvenile hares, weights, and hind foot lengths in mm
+
+```{r}
+weight_hind <- hares_juvenile %>% 
+  select(weight, hindft)
+```
+
+## Data Visualization
+
+Create a scatter plot using `geom_point()` that plots weight (x-axis) against hind foot length (y-axis)
+
+```{r}
+ggplot(data = weight_hind,
+       aes(x = weight, y = hindft)) +
+  geom_point(color = "steelblue3") +
+  labs(x = "Weight (g)",
+       y = "Hind Foot Length (mm)",
+       caption = expression(
+         paste(
+           bold("Figure 3."), " Weight vs Hind Foot Length of Juvenile Hares. Weight is in grams and hind foot length is in millimeters."))) +
+  theme(plot.title = element_text(hjust = 0.5), 
+        plot.caption = element_text(hjust = 0))
+```
+
+## Statistical Testing
+
+Create a linear regression model of the data
+
+```{r}
+weight_hind_lm <- lm(hindft ~ weight, data = weight_hind)
+```
+
+## Key Takeaways
+
+# Summary
+
+# Citations
+
+# End Task
