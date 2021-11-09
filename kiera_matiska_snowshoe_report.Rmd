@@ -15,7 +15,7 @@ output:
 ## Citations
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 # Attach Packages
 library(tidyverse)
@@ -30,7 +30,7 @@ library(effsize)
 - Use `read_csv()` and the here package to read in bonanza_hares.csv.
 
 ```{r}
-hares <- read_csv(here("data", "bonanza_hares.csv"))
+hares <- read_csv(here("data", "bonanza_hares.csv")) # reads in data
 ```
 
 # Annual Juvinile Hare Trap Counts
@@ -43,20 +43,20 @@ hares <- read_csv(here("data", "bonanza_hares.csv"))
 - Use `kable_styling()` to finalize the table
 
 ```{r}
-hares_year <- hares %>% 
-  mutate(date = mdy(date)) %>% 
-  mutate(year = year(date))
+hares_year <- hares %>% # stores new subset
+  mutate(date = mdy(date)) %>% # changes date column to class date
+  mutate(year = year(date)) # adds a new column with just year
 
-hares_juvenile <- hares_year %>% 
-  filter(age == "j")
+hares_juvenile <- hares_year %>% # stores new subset
+  filter(age == "j") # filters out observations in the age column that is not "j"
 
-hares_traps <- hares_juvenile %>% 
-  select(year, age) %>% 
-  group_by(year) %>% 
-  summarize(number = n())
+hares_traps <- hares_juvenile %>% # stores a new subset
+  select(year, age) %>% # selects only columns age and year
+  group_by(year) %>% # groups the subset by year
+  summarize(number = n()) # creates a summary table with only year and number of traps for juvenile hares
 
-hares_traps %>% 
-  kbl() %>% 
+hares_traps %>% # finalize this table
+  kbl(caption = "Table 1. Number of Juvenile Hare Traps Each Year from 1999 - 2012") %>% # adds a caption
   kable_styling()
 ```
 
@@ -65,18 +65,19 @@ hares_traps %>%
 Create a column graph using `ggplot()`
 
 ```{r}
-ggplot(data = hares_traps, 
-       aes(x = year, y = number)) +
-  geom_col(color = "gray", fill = "darkblue") +
-  scale_x_continuous(breaks = 1999:2012) +
-  theme_gray() +
-  labs(x = "Year",
-       y = "Number of Traps",
+ggplot(data = hares_traps, # identifies data set
+       aes(x = year, y = number)) + # sets x and y axis
+  geom_col(color = "gray", fill = "darkblue") + # makes a column graph and adds color to data
+  scale_x_continuous(breaks = 1999:2012) + # add each year label under observations
+  labs(x = "Year", # titles x-axis
+       y = "Number of Traps", # titles y-axis
        caption = expression(
          paste(
-           bold("Figure 1."), " Annual Counts of Juvenile Hare Traps in Bonanza Creek"))) +
-  theme(plot.title = element_text(hjust = 0.5), 
-        plot.caption = element_text(hjust = 0))
+           bold("Figure 1."), " Annual Counts of Juvenile Hare Traps in Bonanza Creek"))) + # creates a figure caption
+  theme(plot.caption = element_text(hjust = 0), # positions figure label to the bottom left of the graph
+        plot.background = element_rect(fill = "lavender"), # changes the plot background color
+        panel.background = element_rect(fill = "gray94"), # changes the panel background color
+        panel.grid.major = element_line(color = "snow3")) # change color of lines on the panel
 ```
 
 Figure 1: Annual Counts of Juvenile Hare Traps in Bonanza Creek
@@ -92,22 +93,22 @@ Figure 1: Annual Counts of Juvenile Hare Traps in Bonanza Creek
 - Create new data frame, hare_weights, using the `select()` function so that it contains only hare weights, sex, and grid site.
 
 ```{r}
-hares_sex <- hares_juvenile %>% 
-  mutate(sex = case_when(
-    sex == "m" ~ "male",
+hares_sex <- hares_juvenile %>% # stores new subset
+  mutate(sex = case_when( # renames variables in the sex column
+    sex == "m" ~ "male", 
     sex == "f" ~ "female",
-    is.na(sex) == TRUE ~ "N/A"
+    is.na(sex) == TRUE ~ "N/A" # changes NA filler variables to N/A for not applicable
   ))
 
-hare_grids <- hares_sex %>% 
-  mutate(grid = case_when(
+hare_grids <- hares_sex %>% # stores new subset
+  mutate(grid = case_when( # renames variables in grid column
     grid == "bonrip" ~ "Bonanza Riparian",
     grid == "bonmat" ~ "Bonanza Mature",
     grid == "bonbs" ~ "Bonanza Lowland Mature"
   ))
 
-hare_weights <- hare_grids %>% 
-  select(weight, sex, grid)
+hare_weights <- hare_grids %>% # stores a new subset
+  select(weight, sex, grid) # with only these columns
 ```
 
 ## Data Visualization
@@ -118,20 +119,22 @@ Create a graph of the hare_weights data:
 - Add a figure caption
 
 ```{r}
-ggplot(data = hare_weights,
-       aes(x = sex, y = weight)) +
-  geom_point(size = 0.8, aes(color = sex)) +
-  facet_grid(~ grid) +
-  labs(x = "Sex",
-       y = "Weight (g)",
+ggplot(data = hare_weights, # identifies data set
+       aes(x = sex, y = weight)) + # sets x and y variables
+  geom_point(size = 0.8, aes(color = sex)) + # scatter plot with colors based on sex size change of each point
+  facet_grid(~ grid) + # separate data on graph by site
+  labs(x = "Sex", # x-axis label
+       y = "Weight (g)", # y-axis label
        caption = expression(
          paste(
-           bold("Figure 2."), " Juvenile Hare Weights (g) by Sex in Each Bonanza Creek Site Zone"
+           bold("Figure 2."), " Juvenile Hare Weights (g) by Sex in Each Bonanza Creek Site Zone" # adds figure caption
          )
        )) +
-  theme(plot.title = element_text(hjust = 0.5), 
-        legend.position = "none",
-        plot.caption = element_text(hjust = 0))
+  theme(legend.position = "none", # removes legend
+        plot.caption = element_text(hjust = 0), # positions figure label to the bottom left of the graph
+        plot.background = element_rect(fill = "lavender"), # changes the plot background color
+        panel.background = element_rect(fill = "gray94"), # changes the panel background color
+        panel.grid.major = element_line(color = "snow3")) # change color of lines on the panel
 ```
 
 ## Major Takeaways
@@ -143,9 +146,9 @@ ggplot(data = hare_weights,
 Create a data subset, `weight_hare` with only the variables sex and weight
 
 ```{r}
-weight_hare <- hares_sex %>% 
-  select(sex, weight) %>% 
-  filter(sex %in% c("male", "female"))
+weight_hare <- hares_sex %>% # stores a new subset
+  select(sex, weight) %>% # with only these columns
+  filter(sex %in% c("male", "female")) # without NA data
 ```
 
 ## Summarize Data
@@ -155,46 +158,46 @@ Create and finalize a summary table that contains the mean, standard deviation, 
 - Use `kableExtra` to finalize table and add table caption
 
 ```{r}
-hare_summary <- weight_hare %>% 
-  group_by(sex) %>% 
-  summarize(mean(weight, na.rm = TRUE),
-            sd(weight, na.rm = TRUE),
-            sample_size = n())
+hare_summary <- weight_hare %>% # stores a summary table
+  group_by(sex) %>% # group by sex
+  summarize(mean(weight, na.rm = TRUE), # mean the weight, remove NA values
+            sd(weight, na.rm = TRUE), # standard deviate the weight, remove NA values
+            sample_size = n()) # calculate sample size
 
-hare_summary %>% 
-  kbl(caption = "Caption 1: Mean, Standard Deviation, and Sample Sizes of Weights by Sex of Juvenile Hares") %>% 
+hare_summary %>% # finalize summary table
+  kbl(caption = "Table 2: Mean, Standard Deviation, and Sample Sizes of Weights by Sex of Juvenile Hares") %>% # add a caption
   kable_styling()
 ```
 
 ```{r, include = FALSE}
 # Create vectors of hare weights 
-weight_males <- hares_sex %>% # This vector is for male hares
-  filter(sex == "male") %>% 
-  drop_na(weight) %>% # Dropping weights with NA stored
-  pull(weight)
+weight_males <- hares_sex %>% # Stores a vector
+  filter(sex == "male") %>% # with only male observations
+  drop_na(weight) %>% # dropping weights with NA stored
+  pull(weight) # separates weight values into vector
 
-weight_females <- hares_sex %>% # This vector is for female hares
-  filter(sex == "female") %>% 
-  drop_na(weight) %>% # Dropping weights with NA stored
-  pull(weight)
+weight_females <- hares_sex %>% # stores a vector
+  filter(sex == "female") %>% # with only male observations
+  drop_na(weight) %>% # dropping weights with NA stored
+  pull(weight) # separates weight values into vector
 ```
 
 ```{r, include = FALSE}
-hist(weight_males)
+hist(weight_males) # create a histogram for male weights
 
-hist(weight_females)
+hist(weight_females) # create a histogram for female weights
 
-qqplot(weight_males, weight_females)
+qqplot(weight_males, weight_females) # create a qqplot of male and female weights
 ```
 
 ## Perform a t-test on the data
 
-Use `t.test()` to run the test and find significance of the data.
+Use `t.test()` to run the test and find significance of the data. Use `cohen.d()` to run a cohens d test.
 
 ```{r}
-weight_ttest <- t.test(weight_males, weight_females)
+weight_ttest <- t.test(weight_males, weight_females) # conduct t-test
 
-weight_cohen <- cohen.d(weight_males, weight_females)
+weight_cohen <- cohen.d(weight_males, weight_females) # conduct cohen d's test
 ```
 
 ## Key Takeaways
@@ -206,8 +209,8 @@ weight_cohen <- cohen.d(weight_males, weight_females)
 Create a new subset that consists of only juvenile hares, weights, and hind foot lengths in mm
 
 ```{r}
-weight_hind <- hares_juvenile %>% 
-  select(weight, hindft)
+weight_hind <- hares_juvenile %>% # stores new subset
+  select(weight, hindft) # with only these columns
 ```
 
 ## Data Visualization
@@ -215,16 +218,18 @@ weight_hind <- hares_juvenile %>%
 Create a scatter plot using `geom_point()` that plots weight (x-axis) against hind foot length (y-axis)
 
 ```{r}
-ggplot(data = weight_hind,
-       aes(x = weight, y = hindft)) +
-  geom_point(color = "steelblue3") +
-  labs(x = "Weight (g)",
-       y = "Hind Foot Length (mm)",
+ggplot(data = weight_hind, # select this data
+       aes(x = weight, y = hindft)) + # selects x and y variables
+  geom_point(color = "springgreen4") + # scatter plot with green points
+  labs(x = "Weight (g)", # x-axis label
+       y = "Hind Foot Length (mm)", # y-axis label
        caption = expression(
          paste(
-           bold("Figure 3."), " Weight vs Hind Foot Length of Juvenile Hares. Weight is in grams and hind foot length is in millimeters."))) +
-  theme(plot.title = element_text(hjust = 0.5), 
-        plot.caption = element_text(hjust = 0))
+           bold("Figure 3."), " Weight vs Hind Foot Length of Juvenile Hares. Weight is in grams and hind foot length is in millimeters."))) + # adds figure caption
+  theme(plot.caption = element_text(hjust = 0), # positions figure label to the bottom left of the graph
+        plot.background = element_rect(fill = "lavender"), # changes the plot background color
+        panel.background = element_rect(fill = "gray94"), # changes the panel background color
+        panel.grid.major = element_line(color = "snow3")) # change color of lines on the panel
 ```
 
 ## Statistical Testing
@@ -232,7 +237,7 @@ ggplot(data = weight_hind,
 Create a linear regression model of the data
 
 ```{r}
-weight_hind_lm <- lm(hindft ~ weight, data = weight_hind)
+weight_hind_lm <- lm(hindft ~ weight, data = weight_hind) # run a linear regression test
 ```
 
 ## Key Takeaways
