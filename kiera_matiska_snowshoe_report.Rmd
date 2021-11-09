@@ -2,17 +2,15 @@
 title: "Bonanza Snowshoe Hares"
 author: "Kiera Matiska"
 date: "11/5/2021"
-output: 
-  html_document: 
-    toc: yes
-    theme: cerulean
-    number_sections: yes
+output: html_document
 ---
 # Introduction
 
 # Data and Analyses
 
 ## Citations
+
+Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -33,9 +31,9 @@ library(effsize)
 hares <- read_csv(here("data", "bonanza_hares.csv")) # reads in data
 ```
 
-# Annual Juvinile Hare Trap Counts
+# 1. Annual Juvinile Hare Trap Counts
 
-# Data Wrangling
+## Data Wrangling
 
 - Create a new column, year, using the `year()` function in lubridate
 - Create a subset that only contains juvenile hare data
@@ -84,7 +82,9 @@ Figure 1: Annual Counts of Juvenile Hare Traps in Bonanza Creek
 
 ## Major Takeaways
 
-# Juvenile Hare Weights
+The maximum and minimum amount of Juvenile Hare Trappings are 126 (in 1999) and 2 (in 2009) respectively. The median number of traps is 30.5 and the mean value is 31.5 traps. Therefore, there is a substantial decrease after the first year, which had 126 juvenile traps. After 1999, the general trend of the juvenile traps is negative, meaning that overall, the trap counts decrease from the first year.
+
+# 2. Juvenile Hare Weights
 
 ## Data Wrangling
 
@@ -139,7 +139,9 @@ ggplot(data = hare_weights, # identifies data set
 
 ## Major Takeaways
 
-# Juvenile Weight Comparisons (male and female snowshoe hares)
+From these graphs, I would suggest that on average, female juvenile hares are smaller than male hares in two of the three sites. The site where female hares appear to be larger is at the Lowland Bonanza Mature site.
+
+# 3. Juvenile Weight Comparisons (male and female snowshoe hares)
 
 ## Wrangle Data
 
@@ -202,7 +204,7 @@ weight_cohen <- cohen.d(weight_males, weight_females) # conduct cohen d's test
 
 ## Key Takeaways
 
-# Relationship Between Juvenile Weight and Hind Foot Length
+# 4. Relationship Between Juvenile Weight and Hind Foot Length
 
 ## Data Wrangling
 
@@ -237,7 +239,7 @@ ggplot(data = weight_hind, # select this data
 Create a linear regression model of the data
 
 ```{r}
-weight_hind_lm <- lm(hindft ~ weight, data = weight_hind) # run a linear regression test
+weight_hind_lm <- lm(weight ~ hindft, data = weight_hind) # run a linear regression test
 ```
 
 ## Key Takeaways
@@ -245,5 +247,7 @@ weight_hind_lm <- lm(hindft ~ weight, data = weight_hind) # run a linear regress
 # Summary
 
 # Citations
+
+Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
 
 # End Task
