@@ -4,15 +4,22 @@ author: "Kiera Matiska"
 date: "11/5/2021"
 output: html_document
 ---
+
 # Introduction
+
+In Alaska, Bonanza Creek is populated with snowshoe hares. Snowshoe hares are a keystone species in northern boreal forests and are therefore crucial to other species living within the same habitat (Kielland et al., 2017). They are important as prey for larger ground and air animals and can also do a lot of damage to vegetation if their population gets too large (National Parks Service, 2021). Due to lack of quantitative descriptions of hare population changes, this data was collected via capture-recapture strategies to count the population of hares in this creek. In this report, I use statistics to describe the changes in juvenile hare populations over 12 years (from 1999 - 2012).
 
 # Data and Analyses
 
-## Citations
+The data set used in this report has 3197 obesrvations of hare individuals between three sites. These sites are Bonanza Riparian, Bonanza Mature Forest, and Bonanza Lowland Mature Forest. Each observation contains data on the age, sex, weight (g), hind foot length (mm), site, left and right ear tags, date, and trap ID. For this report, calculations using t-tests, summary tables, Cohen's *d* tests, and Pearson's R test are analzyed. Data is also represented clearly in graph a multitude of different graphs.
 
+## Citations
+  
 Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
 
-```{r setup, include=FALSE}
+National Parks Service. 2021. NETN Species Spotlight - Snowshoe Hare. National Parks Service. https://www.nps.gov/articles/netn-species-spotlight-snowshoe-hare.htm
+
+```{r setup, include = FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 # Attach Packages
@@ -21,26 +28,27 @@ library(here)
 library(lubridate)
 library(kableExtra)
 library(effsize)
+library(broom)
 ```
 
-# Read in data
-
-- Use `read_csv()` and the here package to read in bonanza_hares.csv.
 
 ```{r}
+# Read in data
+# - Use `read_csv()` and the here package to read in bonanza_hares.csv
+
 hares <- read_csv(here("data", "bonanza_hares.csv")) # reads in data
 ```
 
 # 1. Annual Juvinile Hare Trap Counts
 
-## Data Wrangling
+```{r, include = FALSE}
+# Data Wrangling
 
-- Create a new column, year, using the `year()` function in lubridate
-- Create a subset that only contains juvenile hare data
-- Create a new data frame using the `summarize()` function that has two columns, year and number of hare traps
-- Use `kable_styling()` to finalize the table
+# - Create a new column, year, using the `year()` function in lubridate
+# - Create a subset that only contains juvenile hare data
+# - Create a new data frame using the `summarize()` function that has two columns, year and number of hare traps
+# - Use `kable_styling()` to finalize the table
 
-```{r}
 hares_year <- hares %>% # stores new subset
   mutate(date = mdy(date)) %>% # changes date column to class date
   mutate(year = year(date)) # adds a new column with just year
@@ -58,9 +66,9 @@ hares_traps %>% # finalize this table
   kable_styling()
 ```
 
-## Visualize Data
+### Visualize Data
 
-Create a column graph using `ggplot()`
+Create a column graph plotting year (x-axis) against number of traps (y-axis).
 
 ```{r}
 ggplot(data = hares_traps, # identifies data set
@@ -78,21 +86,19 @@ ggplot(data = hares_traps, # identifies data set
         panel.grid.major = element_line(color = "snow3")) # change color of lines on the panel
 ```
 
-Figure 1: Annual Counts of Juvenile Hare Traps in Bonanza Creek
-
 ## Major Takeaways
 
-The maximum and minimum amount of Juvenile Hare Trappings are 126 (in 1999) and 2 (in 2009) respectively. The median number of traps is 30.5 and the mean value is 31.5 traps. Therefore, there is a substantial decrease after the first year, which had 126 juvenile traps. After 1999, the general trend of the juvenile traps is negative, meaning that overall, the trap counts decrease from the first year.
+The maximum and minimum amount of Juvenile Hare Trappings are `r hares_traps$number[1]` (in 1999) and `r hares_traps$number[10]` (in 2009) respectively. The median number of traps is `r median(hares_traps$number)` and the mean value is `r mean(hares_traps$number)`. These two values show that there has been a substantial decrease in traps since 1999. Hence, after 1999, the general trend of juvenile traps is negative, meaning that overall, the trap counts decrease from the first year onward. On the other hand, these numbers are highly influenced by effort, or the amount of time the researchers put into trapping and re-trapping these hares. By documenting the number of days in the field for a single year and then repeating that annually may lead to clearer results.
 
 # 2. Juvenile Hare Weights
 
-## Data Wrangling
-
-- Using `mutate()`, rename the sex variables so they are spelled out: m = male, f = female, and NA = not applicable
-- Using `mutate()`, reame the grid variables so they are spelled out: bonrip = Bonanza Riparian, bonmat = Bonanza Mature, bonbs = Bonanza Lowland Mature
-- Create new data frame, hare_weights, using the `select()` function so that it contains only hare weights, sex, and grid site.
-
 ```{r}
+# Data Wrangling
+
+# - Using `mutate()`, rename the sex variables so they are spelled out: m = male, f = female, and NA = not applicable
+# - Using `mutate()`, rename the grid variables so they are spelled out: bonrip = Bonanza Riparian, bonmat = Bonanza Mature, bonbs = Bonanza Lowland Mature
+# - Create new data frame, hare_weights, using the `select()` function so that it contains only hare weights, sex, and grid site.
+
 hares_sex <- hares_juvenile %>% # stores new subset
   mutate(sex = case_when( # renames variables in the sex column
     sex == "m" ~ "male", 
@@ -104,16 +110,17 @@ hare_grids <- hares_sex %>% # stores new subset
   mutate(grid = case_when( # renames variables in grid column
     grid == "bonrip" ~ "Bonanza Riparian",
     grid == "bonmat" ~ "Bonanza Mature",
-    grid == "bonbs" ~ "Bonanza Lowland Mature"
+    grid == "bonbs" ~ "Bonanza Lowland Spruce"
   ))
 
 hare_weights <- hare_grids %>% # stores a new subset
   select(weight, sex, grid) # with only these columns
 ```
 
-## Data Visualization
+### Data Visualization
 
-Create a graph of the hare_weights data:
+Create a scatter plot with these characteristics:
+
 - Facet by sex
 - Change label names
 - Add a figure caption
@@ -127,7 +134,7 @@ ggplot(data = hare_weights, # identifies data set
        y = "Weight (g)", # y-axis label
        caption = expression(
          paste(
-           bold("Figure 2."), " Juvenile Hare Weights (g) by Sex in Each Bonanza Creek Site Zone" # adds figure caption
+           bold("Figure 2."), " Juvenile Hare Weights (g) by Sex in Each Bonanza Creek Site Zone." # adds figure caption
          )
        )) +
   theme(legend.position = "none", # removes legend
@@ -137,37 +144,49 @@ ggplot(data = hare_weights, # identifies data set
         panel.grid.major = element_line(color = "snow3")) # change color of lines on the panel
 ```
 
+The first site ('Bonanza Lowland Spruce') is the site used for monitoring abundance and survival of snowshoe hares via live-trapping them. The second site ('Bonanza Mature') consists of mature white spruce, alder, paper birch, and black spruce trees. The last site ('Bonanza Riparian') is the flood zone area of the creek nearby the Tanana River and the Bonanza Mature Black Spruce
+
 ## Major Takeaways
 
-From these graphs, I would suggest that on average, female juvenile hares are smaller than male hares in two of the three sites. The site where female hares appear to be larger is at the Lowland Bonanza Mature site.
+On average, female juvenile hares are smaller than male hares in two of the three sites. Female hares appear to be larger, on average, at the Lowland Bonanza Mature site. Additionally, these sites appear to have different size populations of juvenile hares based on this trapping data. The smallest population is in the Lowland Bonanza Mature site and the largest population is in the Bonanza Riparian site.
 
 # 3. Juvenile Weight Comparisons (male and female snowshoe hares)
 
-## Wrangle Data
-
-Create a data subset, `weight_hare` with only the variables sex and weight
-
 ```{r}
+# Wrangle Data
+# Create a data subset, `weight_hare` with only the variables sex and weight
+
 weight_hare <- hares_sex %>% # stores a new subset
   select(sex, weight) %>% # with only these columns
   filter(sex %in% c("male", "female")) # without NA data
 ```
 
-## Summarize Data
+### Summarize Data
 
 Create and finalize a summary table that contains the mean, standard deviation, and sample size for male and female juvenile hares
+
 - Use the `summarize` and `group_by` functions to find weight statistics based on sex
 - Use `kableExtra` to finalize table and add table caption
 
 ```{r}
 hare_summary <- weight_hare %>% # stores a summary table
   group_by(sex) %>% # group by sex
-  summarize(mean(weight, na.rm = TRUE), # mean the weight, remove NA values
-            sd(weight, na.rm = TRUE), # standard deviate the weight, remove NA values
+  summarize(min_weight_g = min(weight, na.rm = TRUE), # adds min weight for both sexes
+            max_weight_g = max(weight, na.rm = TRUE), # adds max weight for both sexes 
+            mean_weight = round(mean(weight, na.rm = TRUE), 2), # mean the weight, remove NA values 
+            median_weight_g = median(weight, na.rm = TRUE), # gives the middle value of both sexes
+            sd = round(sd(weight, na.rm = TRUE), 2), # standard deviate the weight, remove NA values
             sample_size = n()) # calculate sample size
 
 hare_summary %>% # finalize summary table
-  kbl(caption = "Table 2: Mean, Standard Deviation, and Sample Sizes of Weights by Sex of Juvenile Hares") %>% # add a caption
+  kbl(col.names = c("Sex", # changes column headers
+                    "Minimum Weight (g)",
+                    "Maximum Weight (g)",
+                    "Mean Weight (g)",
+                    "Median Weight (g)",
+                    "Standard Deviation",
+                    "Sample Size"),
+    caption = "Table 1: Mean, Standard Deviation, and Sample Sizes of Weights by Sex of Juvenile Hares") %>% # add a caption
   kable_styling()
 ```
 
@@ -185,6 +204,10 @@ weight_females <- hares_sex %>% # stores a vector
 ```
 
 ```{r, include = FALSE}
+plot(weight_males) # Plots male weights
+
+plot(weight_females) # Plots female weights
+
 hist(weight_males) # create a histogram for male weights
 
 hist(weight_females) # create a histogram for female weights
@@ -192,30 +215,30 @@ hist(weight_females) # create a histogram for female weights
 qqplot(weight_males, weight_females) # create a qqplot of male and female weights
 ```
 
-## Perform a t-test on the data
+```{r, include = FALSE}
+#Perform a t-test and cohen's d test on the data
+# Use `t.test()` to run the test and find significance of the data. Use `cohen.d()` to run a cohens d test.
 
-Use `t.test()` to run the test and find significance of the data. Use `cohen.d()` to run a cohens d test.
-
-```{r}
 weight_ttest <- t.test(weight_males, weight_females) # conduct t-test
 
-weight_cohen <- cohen.d(weight_males, weight_females) # conduct cohen d's test
+weight_cohen <- cohen.d(weight_males, weight_females) # conduct cohen d's test -> Small effect size
 ```
 
 ## Key Takeaways
 
+Between male and female juvenile hares, on average, male hares are larger than female hares by 91 grams. The effect size was small based on the Cohen's *d* value of `r weight_cohen$estimate` and the unpaired t-test resulted in a p-value of `r weight_ttest$p.value`. This p-value means that there is a `r (weight_ttest$p.value)*100`% chance of finding sample means that are at least this different if drawn, by random chance, from populations with the same mean weight.
+
 # 4. Relationship Between Juvenile Weight and Hind Foot Length
 
-## Data Wrangling
-
-Create a new subset that consists of only juvenile hares, weights, and hind foot lengths in mm
-
 ```{r}
+# Data Wrangling
+# Create a new subset that consists of only juvenile hares, weights, and hind foot lengths in mm
+
 weight_hind <- hares_juvenile %>% # stores new subset
   select(weight, hindft) # with only these columns
 ```
 
-## Data Visualization
+### Data Visualization
 
 Create a scatter plot using `geom_point()` that plots weight (x-axis) against hind foot length (y-axis)
 
@@ -234,20 +257,64 @@ ggplot(data = weight_hind, # select this data
         panel.grid.major = element_line(color = "snow3")) # change color of lines on the panel
 ```
 
-## Statistical Testing
+```{r, include = FALSE}
+# Statistical Testing
 
-Create a linear regression model of the data
-
-```{r}
 weight_hind_lm <- lm(weight ~ hindft, data = weight_hind) # run a linear regression test
+
+weight_hind_tidy <- tidy(weight_hind_lm) # Shows lm stats
+
+weight_hind_glance <- glance(weight_hind_lm)
+
+weight_hind_pearsons <- cor.test(weight_hind$weight, weight_hind$hindft) # Pearson's R Test
+
+summary(weight_hind_lm) # Summarizes the lm stats
+
+plot(weight_hind_lm)
 ```
 
 ## Key Takeaways
 
+For this section on the relationship between weight (g) and hind foot length (mm), it appears that there is a positive correlation between hind foot length and weight. For the linear regression model test, the hind foot coefficient is `r round(weight_hind_lm$coefficients[2], 2)`. This value means that with every 1 mm increase in hind foot length, the weight of the hare increases by `r round(weight_hind_lm$coefficients[2], 2)` grams on average. Additionally, the R^2 value is `r round(weight_hind_glance$r.squared, 3)`. The meaning of this value is that `r round(weight_hind_glance$r.squared, 3)*100`% of variance in hare weight is explained by hind foot length. The Pearson's *r* value of `r round(weight_hind_pearsons$estimate, 2)` means that there is a moderate correlation between hind foot length and hare weight. The assumptions of linear regression that may be of concern from this is homoscedesticity because the variances are unequal.
+
 # Summary
+
+To summarize this report, we found:
+
+- that hare traps decreased from 1999 to 2012, showing a possible decrease in effort of the trapping and re-capturing program of snowshoe hares
+- that there was a higher abundance of hares among the Bonanza Riparian Site
+- that female juvenile hares were, on average, slightly smaller than male juvenile hares
+- that there is a moderate, positive correlation between hind foot length (mm) and snowshoe hare weight (g)
 
 # Citations
 
-Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
+David Robinson, Alex Hayes and Simon Couch (2021). broom: Convert Statistical Objects into Tidy Tibbles. R
+package version 0.7.9. https://CRAN.R-project.org/package=broom
+
+Garrett Grolemund, Hadley Wickham (2011). Dates and Times Made Easy with lubridate. Journal of Statistical
+Software, 40(3), 1-25. URL https://www.jstatsoft.org/v40/i03/.
+
+Hao Zhu (2021). kableExtra: Construct Complex Table with 'kable' and Pipe Syntax. R package version 1.3.4.
+https://CRAN.R-project.org/package=kableExtra
+
+Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek         Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
+
+Kirill Müller (2020). here: A Simpler Way to Find Your Files. R package version 1.0.1.
+https://CRAN.R-project.org/package=here
+
+National Parks Service. 2021. NETN Species Spotlight - Snowshoe Hare. National Parks Service. https://www.nps.gov/articles/netn-species-spotlight-snowshoe-hare.htm
+
+R Core Team (2021). R: A language and environment for statistical computing. R Foundation for Statistical
+Computing, Vienna, Austria. URL https://www.R-project.org/.
+
+RStudio Team (2021). RStudio: Integrated Development Environment for R. RStudio, PBC, Boston, MA URL
+http://www.rstudio.com/.
+
+Torchiano M (2020). _effsize: Efficient Effect Size Computation_. doi: 10.5281/zenodo.1480624 (URL:
+https://doi.org/10.5281/zenodo.1480624), R package version 0.8.1, <URL:
+https://CRAN.R-project.org/package=effsize>.
+
+Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686,
+https://doi.org/10.21105/joss.01686
 
 # End Task
