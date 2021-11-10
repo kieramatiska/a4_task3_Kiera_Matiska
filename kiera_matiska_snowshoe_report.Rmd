@@ -11,7 +11,7 @@ In Alaska, Bonanza Creek is populated with snowshoe hares. Snowshoe hares are a 
 
 # Data and Analyses
 
-The data set used in this report has 3197 obesrvations of hare individuals between three sites. These sites are Bonanza Riparian, Bonanza Mature Forest, and Bonanza Lowland Mature Forest. Each observation contains data on the age, sex, weight (g), hind foot length (mm), site, left and right ear tags, date, and trap ID. For this report, calculations using t-tests, summary tables, Cohen's *d* tests, and Pearson's R test are analzyed. Data is also represented clearly in graph a multitude of different graphs.
+The data set used in this report has 3197 obesrvations of hare individuals between three sites. These sites are Bonanza Riparian, Bonanza Mature Forest, and Bonanza Lowland Mature Forest. Each observation contains data on the age, sex, weight (g), hind foot length (mm), site, left and right ear tags, date, and trap ID. For this report, calculations using t-tests, summary tables, Cohen's *d* tests, and Pearson's R test are analzyed. Data is also represented clearly in a table and over a multitude of different graphs.
 
 ## Citations
   
